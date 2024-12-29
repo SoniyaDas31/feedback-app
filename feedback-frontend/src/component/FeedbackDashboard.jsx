@@ -4,21 +4,21 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { Alert, Box, Button, CircularProgress, Paper, TextareaAutosize, TextField, Typography } from '@mui/material';
 
-const FeedbackDashboard = ({ student_id }) => {
+const FeedbackDashboard = () => {
 
-    //console.log(`Student Id: ${student_id}`);
+    const user_id  = localStorage.getItem('userid');
+    
+
     const navigate = useNavigate();
 
-    const projectidlocal = localStorage.getItem('projectid');
 
-
-    const [projectList, setProjectList] = useState([]);
-    const [selectedProject, setSelectedProject] = useState([]);
-    const [enrolled, setEnrolled] = useState(false);
-    const [studentData, setStudentData] = useState({});
+    const [courseList, setCourseList] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState([]);
+    const [userdata, setUserdata] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [projectid, setProjectId] = useState([]);
+    const [courseId, setCourseId] = useState([]);
+    
     const [submissionComments, setSubmissionComments] = useState("");
     const [submissionSuccess, setSubmissionSuccess] = useState("");
 
@@ -34,10 +34,10 @@ const FeedbackDashboard = ({ student_id }) => {
 
     // fetching Project List for Student to select
     useEffect(() => {
-        const fetchProjectList = async () => {
+        const fetchCourseList = async () => {
             try {
-                const response = await axios.get(`https://student-server-94l5.onrender.com/project/`);
-                setProjectList(Array.from(response.data));
+                const response = await axios.get(`https://localhost:3000/course/`);
+                setCourseList(Array.from(response.data));
                 //console.log(response.data);
                 //console.log(projectList);
             } catch (err) {
@@ -46,7 +46,7 @@ const FeedbackDashboard = ({ student_id }) => {
             }
         };
 
-        fetchProjectList();
+        fetchCourseList();
     }, []);
 
 
@@ -54,98 +54,64 @@ const FeedbackDashboard = ({ student_id }) => {
 
     // fetching from mongo db student data using id
     useEffect(() => {
-        const fetchStudentData = async () => {
+        const fetchUserData = async () => {
             try {
-                const response = await axios.get(`https://student-server-94l5.onrender.com/students/${student_id}`);
-                setStudentData(response.data);
+                const response = await axios.get(`https://localhost:3000/users/${user_id}`);
+                setUserdata(response.data);
                 //console.log(response.data);
             } catch (err) {
-                console.error("Error fetching project details:", err);
-                setError("Failed to fetch project details.");
+                console.error("Error fetching user details:", err);
+                setError("Failed to fetch user details.");
             }
         };
 
-        fetchStudentData();
-    }, [student_id]);
+        fetchUserData();
+    }, [user_id]);
 
-    const isProject = studentData?.enrolled_projects;
-    if (isProject) {
+    const isCourse = userdata?.course_id;
+    if (isCourse) {
         //console.log(isProject);
-        isProject.forEach(function (value, key) {
+        isCourse.forEach(function (value, key) {
             //console.log(value.project_id);
-            localStorage.setItem('projectid', value.project_id);
+            localStorage.setItem('courseid', value.course_id);
         });
     } else {
-        localStorage.setItem('projectid', '');
+        localStorage.setItem('courseid', '');
 
 
     }
 
-    //console.log('Project ID', projectidlocal);
+    const courseIdLocal = localStorage.getItem('courseid');
 
-    if (!projectidlocal) {
-        console.log("No Project assigned");
+    if (!courseIdLocal) {
+        console.log("No Course Feedback given");
         //setEnrolled(false);
     } else {
-        console.log("Project Assigned Already");
+        console.log("Course Feedback given Already");
         //setEnrolled(true);
     }
 
-    // fetching project details for requested id in the url
+    // fetching course details for requested id in the url
     useEffect(() => {
-        const fetchProjectDetails = async () => {
+        const fetchCourseDetails = async () => {
             try {
-                const response = await axios.get(`https://student-server-94l5.onrender.com/project/${projectidlocal}`);
-                setSelectedProject(response.data);
-                console.log('ProjectID local in API', projectidlocal);
-                //console.log('Selected Project is :',response.data);
-                //console.log('Selected Project Data :', selectedProject);
-                //console.log('Is enrolled ? :', enrolled);
+                const response = await axios.get(`https://localhost:3000/course/${courseIdLocal}`);
+                setSelectedCourse(response.data);
+                console.log('Course Id local in API', courseIdLocal);
             } catch (err) {
                 console.error("Error fetching project details:", err);
                 setError("Failed to fetch project details.");
             }
         };
 
-        fetchProjectDetails();
-    }, [projectidlocal]);
-
-    //console.log(projectList);
-
-    const handleSelectProject = (id) => {
-        //console.log(`Selected project is ${id}`);
-        localStorage.setItem('projectid', id);
-        const project_idlocal = localStorage.getItem('projectid');
-        //console.log('Project Id stored', project_idlocal);
-        const postProjectData = async () => {
-            //console.log('posting selected project');
-            try {
-                const response = await axios.post(
-                    `https://student-server-94l5.onrender.com/students/${student_id}/${project_idlocal}`
-                );
-
-                setSubmissionSuccess(response.data.message);
-                console.log(submissionSuccess);
-                localStorage.setItem('projectid', id);
-                setTimeout(() => {
-                    navigate(`/projects/`);
-                }, 2000);
-                setSubmissionComments("");
-            } catch (err) {
-                console.error("Error submitting weekly submission:", err);
-                setError("Failed to submit the weekly submission.");
-            }
-        }
-        postProjectData();
+        fetchCourseDetails();
+    }, [courseIdLocal]);
 
 
-    }
 
     // Define function that will open the modal
-    const handleOpenModal = (projectId) => {
-        // setProjectId(projectId);
-        //console.log(`Project Id ${projectId}`);
-        setProjectId(`${projectId}`);
+    const handleOpenModal = (course_id) => {
+        setCourseId(`${course_id}`);
         setIsModalOpen(true);
         return projectid;
     };
@@ -178,12 +144,8 @@ const FeedbackDashboard = ({ student_id }) => {
                                 <form>
                                     <div className="row row-gap-3">
                                         <div className="col-3">
-                                            <label htmlFor="">Name</label>
-                                            <input value={studentData?.name} disabled name="studName" type="text" placeholder="Name" className="form-control" />
-                                        </div>
-                                        <div className="col-3">
                                             <label htmlFor="">Email</label>
-                                            <input value={studentData?.email} disabled name="studEmail" type="text" placeholder="Email" className="form-control" />
+                                            <input value={userdata?.email} disabled name="studEmail" type="text" placeholder="Email" className="form-control" />
                                         </div>
 
                                     </div>
@@ -200,22 +162,22 @@ const FeedbackDashboard = ({ student_id }) => {
                                 <h5>Course List</h5>
                             </div>
                             <div className="card-body">
-                                {projectidlocal ? (
-                                    selectedProject ? (
+                                {courseIdLocal ? (
+                                    selectedCourse ? (
                                         <Paper sx={{ padding: "1rem", marginBottom: "2rem" }} elevation={3}>
-                                            <Typography variant="h5">{selectedProject.title}</Typography>
+                                            <Typography variant="h5">{selectedCourse.title}</Typography>
                                            
                                             <Typography variant="body1" sx={{ marginBottom: "1rem" }}>
-                                                {selectedProject.description}
+                                                {selectedCourse.description}
                                             </Typography>
                                             <Typography variant="subtitle2"  sx={{ marginBottom: "1rem" }} color="error">
-                                                End Date: &nbsp;{formatDate(selectedProject?.internship_end_date)}
+                                                End Date: &nbsp;{formatDate(selectedCourse?.internship_end_date)}
                                             </Typography>
-                                            {selectedProject.overview_document && (
+                                            {selectedCourse.overview_document && (
                                                 <Button
                                                     variant="outlined"
                                                     color="primary"
-                                                    href={selectedProject.overview_document}
+                                                    href={selectedCourse.overview_document}
                                                     target="_blank"
                                                     mt={1}
                                                     download
@@ -247,21 +209,20 @@ const FeedbackDashboard = ({ student_id }) => {
                                                 <th scope="col" className="text-center">No</th>
                                                 <th scope="col" className="text-center">Course Title</th>
                                                 <th scope="col" className="text-center">Course Description</th>
-                                                <th scope="col" className="text-center">Course End Date</th>
+                                                <th scope="col" className="text-center">Course Duration</th>
                                                 <th scope="col" className="text-center">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {projectList?.map((project, index) => {
+                                            {courseList?.map((course, index) => {
                                                 return (
                                                     <tr>
                                                         <td className="text-center">{index + 1}</td>
-                                                        <td className="text-center">{project?.title}</td>
-                                                        <td className="text-center">{project?.description}</td>
-                                                        <td className="text-center">{formatDate(project?.internship_end_date)}</td>
+                                                        <td className="text-center">{course?.title}</td>
+                                                        <td className="text-center">{course?.description}</td>
+                                                        <td className="text-center">{formatDate(course?.duration)}</td>
                                                         <td className="text-center">
-                                                            <button className="btn btn-secondary me-3 pl-2" onClick={() => handleViewDocument(project?.overview_document)}><i className="fa-regular fa-eye pe-2 pointer" ></i> View Attachments </button>
-                                                            <button className="btn btn-primary me-3 pl-2" data-toggle="modal" onClick={() => handleOpenModal(project?._id)} data-target="#projectConfirmModal"><i className="fa-regular fa-plus pe-2 pointer" ></i> Select Project </button>
+                                                            <button className="btn btn-primary me-3 pl-2" data-toggle="modal" onClick={() => handleOpenModal(course?._id)} data-target="#projectConfirmModal"><i className="fa-regular fa-plus pe-2 pointer" ></i> Select Project </button>
 
                                                         </td>
                                                     </tr>
@@ -280,13 +241,13 @@ const FeedbackDashboard = ({ student_id }) => {
                                         <div className="modal-content">
                                             <div className="modal-header">
                                                 <button type="button" className="close" data-dismiss="modal" onClick={() => handleCloseModal()}>&times;</button>
-                                                <h4 className="modal-title">Project Selection Confirmation</h4>
+                                                <h4 className="modal-title">Course Feedback</h4>
                                             </div>
                                             <div className="modal-body">
-                                                <p>Once the Project is selected cannot be changed</p>
+                                                <p>Feedback Form heree</p>
                                             </div>
                                             <div className="modal-footer">
-                                                <button type="button" className="btn btn-primary" onClick={() => handleSelectProject(projectid)}>Confirm</button>
+                                                <button type="button" className="btn btn-primary" onClick={() => handleSelectProject(courseId)}>Submit Feedback</button>
                                                 <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => handleCloseModal()}>Cancel</button>
                                             </div>
                                             {submissionSuccess && <Alert severity="success">{submissionSuccess}</Alert>}
