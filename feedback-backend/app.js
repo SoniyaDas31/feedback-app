@@ -7,6 +7,10 @@ const app = express();
 
 app.use('/login', loginRouter);
 
+app.use('/', (req, res)=>{
+    res.send("DB connected, root API call");
+});
+
 mongoose.connect('mongodb+srv://dassubbulakshmi:dNcsdRAWeXP7qBop@feedback.owdtv.mongodb.net/?retryWrites=true&w=majority&appName=feedback').then(() => {
     console.log("connection established");
 }).catch((err) => {
