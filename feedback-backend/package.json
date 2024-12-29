@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "backend api for feedback app",
+  "main": "app.js",
+  "scripts": {
+    "test": "server working"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoniyaDas31/feedback-app.git"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "dassubbulakshmi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SoniyaDas31/feedback-app/issues"
+  },
+  "homepage": "https://github.com/SoniyaDas31/feedback-app#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongoose": "^8.9.2"
+  }
+}
